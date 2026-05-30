@@ -1,0 +1,8 @@
+holoviews
+hvplot
+joblib
+marimo
+numpy
+polars
+scipy
+tqdm

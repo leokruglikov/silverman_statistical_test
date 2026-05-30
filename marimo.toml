@@ -1,0 +1,5 @@
+[ai.open_ai]
+api_key = ""
+base_url = "https://openrouter.ai/api/v1"
+model = "model = "google/gemini-pro-1.5"
+
