@@ -1,17 +1,33 @@
 # Depict Silverman
 
-Small notebooks and utilities for exploring Silverman's test for multimodality.
+Small package and marimo notebooks for exploring Silverman's multimodality test.
 
-The project is intentionally lightweight. It contains:
+## Structure
 
-- `silverman_utils.py`: small helpers for simulation, KDE mode counting, critical-bandwidth search, and Silverman-style bootstrap variants
-- `silverman_edge_cases.mo.py`: a simple marimo notebook for illustrating where the test works well and where it becomes fragile
-- `silverman_edge_cases_parallel.mo.py`: the same notebook with some heavier simulation cells parallelized using `joblib`
-- other `*.mo.py` notebooks used for earlier experiments and illustrations
+```text
+silverman/
+  __init__.py
+  silverman_test.py
+  utils.py
+notebooks/
+  silverman_edge_cases.mo.py
+  silverman_edge_cases_parallel.mo.py
+  ...
+silverman_test.py
+silverman_utils.py
+requirements.txt
+pyproject.toml
+```
 
-## Setup
+Notes:
 
-Create a virtual environment and install dependencies:
+- `silverman/` is the package-first code.
+- `notebooks/` contains the marimo explorations.
+- top-level `silverman_test.py` and `silverman_utils.py` are compatibility shims.
+
+## Install
+
+You can use the project either as a local repo or as a small package.
 
 ```bash
 python -m venv .venv
@@ -19,21 +35,101 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run
-
-Launch a notebook with marimo:
+or install it in editable mode:
 
 ```bash
-marimo edit silverman_edge_cases.mo.py
+pip install -e .
+```
+
+## Main API
+
+The main entry point is:
+
+```python
+from silverman import silverman_test
+```
+
+or:
+
+```python
+from silverman.silverman_test import silverman_test
+```
+
+### Example
+
+```python
+import numpy as np
+from silverman import silverman_test
+
+rng = np.random.default_rng(0)
+x = np.concatenate([
+    rng.normal(-2.0, 0.7, 150),
+    rng.normal(2.0, 0.7, 150),
+])
+
+result = silverman_test(
+    x,
+    k_modes=1,
+    method="silverman",
+    n_boot=100,
+    parallel=False,
+)
+
+print(result.pvalue)
+print(result.h_crit)
+print(result.summary())
+```
+
+## API Details
+
+`silverman_test(...)` supports:
+
+- `method="silverman"`: plain Silverman bootstrap
+- `method="variance_corrected"`: variance-corrected version
+- `method="hall_york"`: Hall-York adjusted version
+- `parallel=True`: parallel bootstrap with `joblib`
+- `parallel=False`: sequential bootstrap
+
+Important arguments:
+
+- `data`: one-dimensional sample
+- `k_modes`: null hypothesis is at most `k_modes` modes
+- `n_boot`: number of bootstrap draws
+- `alpha`: Hall-York correction level
+- `n_grid`, `margin`, `max_iter`, `tol`, `h_low_factor`: search/KDE controls
+
+## Result Object
+
+The returned object is `SilvermanTestResult`. It is intentionally lightweight and statsmodels-like:
+
+- `result.pvalue`
+- `result.h_crit`
+- `result.h_stars`
+- `result.search_history`
+- `result.x_grid`
+- `result.method`
+- `result.summary()`
+
+For Hall-York runs it also contains:
+
+- `result.alpha`
+- `result.lambda_alpha`
+- `result.pvalue_raw`
+
+## Notebooks
+
+Run the notebooks from the repo root:
+
+```bash
+marimo edit notebooks/silverman_edge_cases.mo.py
 ```
 
 or the parallel version:
 
 ```bash
-marimo edit silverman_edge_cases_parallel.mo.py
+marimo edit notebooks/silverman_edge_cases_parallel.mo.py
 ```
 
-## Notes
+## Scope
 
-- The repository is focused on experimentation and illustration rather than packaging.
-- Generated HTML exports and local virtualenv files are ignored by Git.
+This is still a small experimental project, not a full statistical library. The goal is to keep the implementation simple, readable, and close to the notebook logic that motivated it.
