@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "silverman"
+version = "0.1.0"
+description = "Small Silverman-test package and marimo notebooks for multimodality experiments."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "holoviews",
+    "hvplot",
+    "joblib",
+    "marimo",
+    "numpy",
+    "polars",
+    "scipy",
+    "tqdm",
+]
+
+[tool.setuptools]
+packages = ["silverman"]
